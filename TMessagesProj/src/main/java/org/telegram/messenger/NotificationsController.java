@@ -52,6 +52,7 @@ import android.util.SparseIntArray;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;

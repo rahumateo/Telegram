@@ -23,7 +23,7 @@ import android.view.View;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.R;
 import org.telegram.messenger.browser.Browser;

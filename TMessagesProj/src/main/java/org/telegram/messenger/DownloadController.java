@@ -17,6 +17,8 @@ import android.net.ConnectivityManager;
 import android.util.LongSparseArray;
 import android.util.SparseArray;
 
+import org.telegram.messenger.message.MessageObject;
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 
@@ -367,17 +369,17 @@ public class DownloadController implements NotificationCenter.NotificationCenter
             return false;
         }
         int type;
-        if (MessageObject.isPhoto(message)) {
+        if (MessageObjectTypeIdentifier.isPhoto(message)) {
             type = AUTODOWNLOAD_MASK_PHOTO;
-        } else if (MessageObject.isVoiceMessage(message)) {
+        } else if (MessageObjectTypeIdentifier.isVoiceMessage(message)) {
             type = AUTODOWNLOAD_MASK_AUDIO;
-        } else if (MessageObject.isRoundVideoMessage(message)) {
+        } else if (MessageObjectTypeIdentifier.isRoundVideoMessage(message)) {
             type = AUTODOWNLOAD_MASK_VIDEOMESSAGE;
-        } else if (MessageObject.isVideoMessage(message)) {
+        } else if (MessageObjectTypeIdentifier.isVideoMessage(message)) {
             type = AUTODOWNLOAD_MASK_VIDEO;
-        } else if (MessageObject.isMusicMessage(message)) {
+        } else if (MessageObjectTypeIdentifier.isMusicMessage(message)) {
             type = AUTODOWNLOAD_MASK_MUSIC;
-        } else if (MessageObject.isGifMessage(message)) {
+        } else if (MessageObjectTypeIdentifier.isGifMessage(message)) {
             type = AUTODOWNLOAD_MASK_GIF;
         } else {
             type = AUTODOWNLOAD_MASK_DOCUMENT;
@@ -396,7 +398,7 @@ public class DownloadController implements NotificationCenter.NotificationCenter
             } else if (peer.chat_id != 0) {
                 index = 2;
             } else {
-                if (MessageObject.isMegagroup(message)) {
+                if (MessageObjectTypeIdentifier.isMegagroup(message)) {
                     index = 2;
                 } else {
                     index = 3;

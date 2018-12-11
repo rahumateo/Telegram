@@ -27,6 +27,8 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
+import org.telegram.messenger.message.MessageObject;
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.messenger.secretmedia.EncryptedFileInputStream;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLObject;
@@ -1805,8 +1807,8 @@ public class ImageLoader {
                         if (trueExt.equals("mp4") || trueExt.equals("gif")) {
                             img.animatedFile = true;
                         }
-                    } else if (imageLocation instanceof WebFile && MessageObject.isGifDocument((WebFile) imageLocation) ||
-                            imageLocation instanceof TLRPC.Document && (MessageObject.isGifDocument((TLRPC.Document) imageLocation) || MessageObject.isRoundVideoDocument((TLRPC.Document) imageLocation))) {
+                    } else if (imageLocation instanceof WebFile && MessageObjectTypeIdentifier.isGifDocument((WebFile) imageLocation) ||
+                            imageLocation instanceof TLRPC.Document && (MessageObjectTypeIdentifier.isGifDocument((TLRPC.Document) imageLocation) || MessageObjectTypeIdentifier.isRoundVideoDocument((TLRPC.Document) imageLocation))) {
                         img.animatedFile = true;
                     }
 
@@ -1823,7 +1825,7 @@ public class ImageLoader {
                                 cacheFile = new File(FileLoader.getDirectory(FileLoader.MEDIA_DIR_CACHE), url + ".enc");
                             }
                         } else if (imageLocation instanceof TLRPC.Document) {
-                            if (MessageObject.isVideoDocument((TLRPC.Document) imageLocation)) {
+                            if (MessageObjectTypeIdentifier.isVideoDocument((TLRPC.Document) imageLocation)) {
                                 cacheFile = new File(FileLoader.getDirectory(FileLoader.MEDIA_DIR_VIDEO), url);
                             } else {
                                 cacheFile = new File(FileLoader.getDirectory(FileLoader.MEDIA_DIR_DOCUMENT), url);
@@ -1989,7 +1991,7 @@ public class ImageLoader {
                 if (thumbKey != null) {
                     thumbUrl = thumbKey + "." + ext;
                 }
-                saveImageToCache = !MessageObject.isGifDocument(document) && !MessageObject.isRoundVideoDocument((TLRPC.Document) imageLocation);
+                saveImageToCache = !MessageObjectTypeIdentifier.isGifDocument(document) && !MessageObjectTypeIdentifier.isRoundVideoDocument((TLRPC.Document) imageLocation);
             }
             if (imageLocation == thumbLocation) {
                 imageLocation = null;

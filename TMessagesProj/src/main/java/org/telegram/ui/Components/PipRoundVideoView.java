@@ -45,7 +45,7 @@ import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.Bitmaps;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.MediaController;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.UserConfig;
 import org.telegram.ui.ActionBar.ActionBar;

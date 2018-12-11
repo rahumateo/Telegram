@@ -45,6 +45,7 @@ import com.googlecode.mp4parser.util.Matrix;
 import com.googlecode.mp4parser.util.Path;
 
 import org.telegram.messenger.audioinfo.AudioInfo;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.NativeByteBuffer;
@@ -869,7 +870,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
 
     public boolean retrySendMessage(MessageObject messageObject, boolean unsent) {
         if (messageObject.getId() >= 0) {
-            if (messageObject.isEditing()) {
+            if (MessageObjectTypeIdentifier.isEditing()) {
                 editMessageMedia(messageObject, null, null, null, null, null, true);
             }
             return false;
@@ -1257,7 +1258,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                 }
                 newMsg.dialog_id = peer;
                 newMsg.to_id = to_id;
-                if (MessageObject.isVoiceMessage(newMsg) || MessageObject.isRoundVideoMessage(newMsg)) {
+                if (MessageObjectTypeIdentifier.isVoiceMessage(newMsg) || MessageObjectTypeIdentifier.isRoundVideoMessage(newMsg)) {
                     if (inputPeer instanceof TLRPC.TL_inputPeerChannel && msgObj.getChannelId() != 0) {
                         newMsg.media_unread = msgObj.isContentUnread();
                     } else {
@@ -1454,7 +1455,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                     type = 2;
                 } else {
                     document = (TLRPC.TL_document) messageObject.messageOwner.media.document;
-                    if (MessageObject.isVideoDocument(document) || videoEditedInfo != null) {
+                    if (MessageObjectTypeIdentifier.isVideoDocument(document) || videoEditedInfo != null) {
                         type = 3;
                     } else {
                         type = 7;
@@ -1496,7 +1497,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                     newMsg.media = new TLRPC.TL_messageMediaDocument();
                     newMsg.media.flags |= 3;
                     newMsg.media.document = document;
-                    if (MessageObject.isVideoDocument(document) || videoEditedInfo != null) {
+                    if (MessageObjectTypeIdentifier.isVideoDocument(document) || videoEditedInfo != null) {
                         type = 3;
                     } else {
                         type = 7;
@@ -1595,7 +1596,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                         inputMedia = new TLRPC.TL_inputMediaUploadedDocument();
                         inputMedia.mime_type = document.mime_type;
                         inputMedia.attributes = document.attributes;
-                        if (!messageObject.isGif() && (videoEditedInfo == null || !videoEditedInfo.muted)) {
+                        if (!MessageObjectTypeIdentifier.isGif() && (videoEditedInfo == null || !videoEditedInfo.muted)) {
                             inputMedia.nosound_video = true;
                         }
                         if (delayedMessage == null) {
@@ -2045,7 +2046,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
         try {
             if (retryMessageObject != null) {
                 newMsg = retryMessageObject.messageOwner;
-                if (retryMessageObject.isForwarded()) {
+                if (retryMessageObjectTypeIdentifier.isForwarded()) {
                     type = 4;
                 } else {
                     if (retryMessageObject.type == 0) {
@@ -2199,9 +2200,9 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                     newMsg.media.document = document;
                     if (params != null && params.containsKey("query_id")) {
                         type = 9;
-                    } else if (MessageObject.isVideoDocument(document) || MessageObject.isRoundVideoDocument(document) || videoEditedInfo != null) {
+                    } else if (MessageObjectTypeIdentifier.isVideoDocument(document) || MessageObjectTypeIdentifier.isRoundVideoDocument(document) || videoEditedInfo != null) {
                         type = 3;
-                    } else if (MessageObject.isVoiceDocument(document)) {
+                    } else if (MessageObjectTypeIdentifier.isVoiceDocument(document)) {
                         type = 8;
                     } else {
                         type = 7;
@@ -2213,12 +2214,12 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                         }
                         params.put("ve", ve);
                     }
-                    if (encryptedChat != null && document.dc_id > 0 && !MessageObject.isStickerDocument(document)) {
+                    if (encryptedChat != null && document.dc_id > 0 && !MessageObjectTypeIdentifier.isStickerDocument(document)) {
                         newMsg.attachPath = FileLoader.getPathToAttach(document).toString();
                     } else {
                         newMsg.attachPath = path;
                     }
-                    if (encryptedChat != null && MessageObject.isStickerDocument(document)) {
+                    if (encryptedChat != null && MessageObjectTypeIdentifier.isStickerDocument(document)) {
                         for (int a = 0; a < document.attributes.size(); a++) {
                             TLRPC.DocumentAttribute attribute = document.attributes.get(a);
                             if (attribute instanceof TLRPC.TL_documentAttributeSticker) {
@@ -2370,7 +2371,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                     }
                 }
                 if (newMsg.ttl != 0 && newMsg.media.document != null) {
-                    if (MessageObject.isVoiceMessage(newMsg)) {
+                    if (MessageObjectTypeIdentifier.isVoiceMessage(newMsg)) {
                         int duration = 0;
                         for (int a = 0; a < newMsg.media.document.attributes.size(); a++) {
                             TLRPC.DocumentAttribute attribute = newMsg.media.document.attributes.get(a);
@@ -2380,7 +2381,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                             }
                         }
                         newMsg.ttl = Math.max(newMsg.ttl, duration + 1);
-                    } else if (MessageObject.isVideoMessage(newMsg) || MessageObject.isRoundVideoMessage(newMsg)) {
+                    } else if (MessageObjectTypeIdentifier.isVideoMessage(newMsg) || MessageObjectTypeIdentifier.isRoundVideoMessage(newMsg)) {
                         int duration = 0;
                         for (int a = 0; a < newMsg.media.document.attributes.size(); a++) {
                             TLRPC.DocumentAttribute attribute = newMsg.media.document.attributes.get(a);
@@ -2393,7 +2394,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                     }
                 }
             }
-            if (high_id != 1 && (MessageObject.isVoiceMessage(newMsg) || MessageObject.isRoundVideoMessage(newMsg))) {
+            if (high_id != 1 && (MessageObjectTypeIdentifier.isVoiceMessage(newMsg) || MessageObjectTypeIdentifier.isRoundVideoMessage(newMsg))) {
                 newMsg.media_unread = true;
             }
 
@@ -2588,7 +2589,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                             inputMedia = new TLRPC.TL_inputMediaUploadedDocument();
                             inputMedia.mime_type = document.mime_type;
                             inputMedia.attributes = document.attributes;
-                            if (!MessageObject.isRoundVideoDocument(document) && (videoEditedInfo == null || !videoEditedInfo.muted && !videoEditedInfo.roundVideo)) {
+                            if (!MessageObjectTypeIdentifier.isRoundVideoDocument(document) && (videoEditedInfo == null || !videoEditedInfo.muted && !videoEditedInfo.roundVideo)) {
                                 inputMedia.nosound_video = true;
                             }
                             if (ttl != 0) {
@@ -2856,7 +2857,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                         }
                     } else if (type == 3) {
                         ImageLoader.fillPhotoSizeWithBytes(document.thumb);
-                        if (MessageObject.isNewGifDocument(document) || MessageObject.isRoundVideoDocument(document)) {
+                        if (MessageObjectTypeIdentifier.isNewGifDocument(document) || MessageObjectTypeIdentifier.isRoundVideoDocument(document)) {
                             reqSend.media = new TLRPC.TL_decryptedMessageMediaDocument();
                             reqSend.media.attributes = document.attributes;
                             if (document.thumb != null && document.thumb.bytes != null) {
@@ -2915,7 +2916,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                         reqSend.media.user_id = user.id;
                         SecretChatHelper.getInstance(currentAccount).performSendEncryptedRequest(reqSend, newMsgObj.messageOwner, encryptedChat, null, null, newMsgObj);
                     } else if (type == 7 || type == 9 && document != null) {
-                        if (MessageObject.isStickerDocument(document)) {
+                        if (MessageObjectTypeIdentifier.isStickerDocument(document)) {
                             reqSend.media = new TLRPC.TL_decryptedMessageMediaExternalDocument();
                             reqSend.media.id = document.id;
                             reqSend.media.date = document.date;
@@ -3647,12 +3648,12 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                                 removeFromSendingMessages(newMsgObj.id);
                             });
                         });
-                        if (MessageObject.isVideoMessage(newMsgObj) || MessageObject.isRoundVideoMessage(newMsgObj) || MessageObject.isNewGifMessage(newMsgObj)) {
+                        if (MessageObjectTypeIdentifier.isVideoMessage(newMsgObj) || MessageObjectTypeIdentifier.isRoundVideoMessage(newMsgObj) || MessageObjectTypeIdentifier.isNewGifMessage(newMsgObj)) {
                             stopVideoService(attachPath);
                         }
                     } else {
                         AlertsCreator.processError(currentAccount, error, null, req);
-                        if (MessageObject.isVideoMessage(newMsgObj) || MessageObject.isRoundVideoMessage(newMsgObj) || MessageObject.isNewGifMessage(newMsgObj)) {
+                        if (MessageObjectTypeIdentifier.isVideoMessage(newMsgObj) || MessageObjectTypeIdentifier.isRoundVideoMessage(newMsgObj) || MessageObjectTypeIdentifier.isNewGifMessage(newMsgObj)) {
                             stopVideoService(newMsgObj.attachPath);
                         }
                         removeFromSendingMessages(newMsgObj.id);
@@ -3727,7 +3728,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                             Utilities.stageQueue.postRunnable(() -> MessagesController.getInstance(currentAccount).processUpdates(updates, false));
                         }
 
-                        if (MessageObject.isLiveLocationMessage(newMsgObj)) {
+                        if (MessageObjectTypeIdentifier.isLiveLocationMessage(newMsgObj)) {
                             LocationController.getInstance(currentAccount).addSharingLocation(newMsgObj.dialog_id, newMsgObj.id, newMsgObj.media.period, newMsgObj);
                         }
 
@@ -3759,7 +3760,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                                     processSentMessage(oldId);
                                     removeFromSendingMessages(oldId);
                                 });
-                                if (MessageObject.isVideoMessage(newMsgObj) || MessageObject.isRoundVideoMessage(newMsgObj) || MessageObject.isNewGifMessage(newMsgObj)) {
+                                if (MessageObjectTypeIdentifier.isVideoMessage(newMsgObj) || MessageObjectTypeIdentifier.isRoundVideoMessage(newMsgObj) || MessageObjectTypeIdentifier.isNewGifMessage(newMsgObj)) {
                                     stopVideoService(attachPath);
                                 }
                             });
@@ -3773,7 +3774,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                         newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
                         NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.messageSendError, newMsgObj.id);
                         processSentMessage(newMsgObj.id);
-                        if (MessageObject.isVideoMessage(newMsgObj) || MessageObject.isRoundVideoMessage(newMsgObj) || MessageObject.isNewGifMessage(newMsgObj)) {
+                        if (MessageObjectTypeIdentifier.isVideoMessage(newMsgObj) || MessageObjectTypeIdentifier.isRoundVideoMessage(newMsgObj) || MessageObjectTypeIdentifier.isNewGifMessage(newMsgObj)) {
                             stopVideoService(newMsgObj.attachPath);
                         }
                         removeFromSendingMessages(newMsgObj.id);
@@ -3843,12 +3844,12 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
             newMsg.media.photo.id = sentMessage.media.photo.id;
             newMsg.media.photo.access_hash = sentMessage.media.photo.access_hash;
         } else if (sentMessage.media instanceof TLRPC.TL_messageMediaDocument && sentMessage.media.document != null && newMsg.media instanceof TLRPC.TL_messageMediaDocument && newMsg.media.document != null) {
-            if (MessageObject.isVideoMessage(sentMessage)) {
+            if (MessageObjectTypeIdentifier.isVideoMessage(sentMessage)) {
                 if (sentMessage.media.ttl_seconds == 0) {
                     MessagesStorage.getInstance(currentAccount).putSentFile(originalPath, sentMessage.media.document, 2);
                 }
                 sentMessage.attachPath = newMsg.attachPath;
-            } else if (!MessageObject.isVoiceMessage(sentMessage) && !MessageObject.isRoundVideoMessage(sentMessage)) {
+            } else if (!MessageObjectTypeIdentifier.isVoiceMessage(sentMessage) && !MessageObjectTypeIdentifier.isRoundVideoMessage(sentMessage)) {
                 if (sentMessage.media.ttl_seconds == 0) {
                     MessagesStorage.getInstance(currentAccount).putSentFile(originalPath, sentMessage.media.document, 1);
                 }
@@ -3867,7 +3868,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                     size2.location = size.location;
                     size2.size = size.size;
                 }
-            } else if (size2 != null && MessageObject.isStickerMessage(sentMessage) && size2.location != null) {
+            } else if (size2 != null && MessageObjectTypeIdentifier.isStickerMessage(sentMessage) && size2.location != null) {
                 size.location = size2.location;
             } else if (size2 != null && size2.location instanceof TLRPC.TL_fileLocationUnavailable || size2 instanceof TLRPC.TL_photoSizeEmpty) {
                 newMsg.media.document.thumb = sentMessage.media.document.thumb;
@@ -3897,10 +3898,10 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
             newMsg.media.document.size = sentMessage.media.document.size;
             newMsg.media.document.mime_type = sentMessage.media.document.mime_type;
 
-            if ((sentMessage.flags & TLRPC.MESSAGE_FLAG_FWD) == 0 && MessageObject.isOut(sentMessage)) {
-                if (MessageObject.isNewGifDocument(sentMessage.media.document)) {
+            if ((sentMessage.flags & TLRPC.MESSAGE_FLAG_FWD) == 0 && MessageObjectTypeIdentifier.isOut(sentMessage)) {
+                if (MessageObjectTypeIdentifier.isNewGifDocument(sentMessage.media.document)) {
                     DataQuery.getInstance(currentAccount).addRecentGif(sentMessage.media.document, sentMessage.date);
-                } else if (MessageObject.isStickerDocument(sentMessage.media.document)) {
+                } else if (MessageObjectTypeIdentifier.isStickerDocument(sentMessage.media.document)) {
                     DataQuery.getInstance(currentAccount).addRecentSticker(DataQuery.TYPE_IMAGE, sentMessage.media.document, sentMessage.date, false);
                 }
             }
@@ -3912,7 +3913,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                     sentMessage.attachPath = newMsg.attachPath;
                     sentMessage.message = newMsg.message;
                 } else {
-                    if (MessageObject.isVideoMessage(sentMessage)) {
+                    if (MessageObjectTypeIdentifier.isVideoMessage(sentMessage)) {
                         newMsgObj.attachPathExists = true;
                     } else {
                         newMsgObj.mediaExists = newMsgObj.attachPathExists;

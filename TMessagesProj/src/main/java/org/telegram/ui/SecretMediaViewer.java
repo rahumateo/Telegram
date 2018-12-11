@@ -47,13 +47,14 @@ import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
@@ -813,7 +814,7 @@ public class SecretMediaViewer implements NotificationCenter.NotificationCenterD
         }
         currentThumb = object.imageReceiver.getThumbBitmapSafe();
         if (document != null) {
-            if (MessageObject.isGifDocument(document)) {
+            if (MessageObjectTypeIdentifier.isGifDocument(document)) {
                 actionBar.setTitle(LocaleController.getString("DisappearingGif", R.string.DisappearingGif));
                 centerImage.setImage(document, null, currentThumb != null ? new BitmapDrawable(currentThumb.bitmap) : null, -1, null, 1);
                 secretDeleteTimer.setDestroyTime((long) messageObject.messageOwner.destroyTime * 1000, messageObject.messageOwner.ttl, false);

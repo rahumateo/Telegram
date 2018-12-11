@@ -61,7 +61,7 @@ import org.telegram.messenger.R;
 import org.telegram.messenger.WebFile;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.ActionBarMenu;
 import org.telegram.ui.ActionBar.ActionBarMenuItem;

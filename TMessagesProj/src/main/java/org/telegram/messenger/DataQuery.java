@@ -40,6 +40,7 @@ import android.widget.Toast;
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.SQLite.SQLiteDatabase;
 import org.telegram.SQLite.SQLitePreparedStatement;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.NativeByteBuffer;
@@ -1892,13 +1893,13 @@ public class DataQuery {
         if (message.media instanceof TLRPC.TL_messageMediaPhoto) {
             return MEDIA_PHOTOVIDEO;
         } else if (message.media instanceof TLRPC.TL_messageMediaDocument) {
-            if (MessageObject.isVoiceMessage(message) || MessageObject.isRoundVideoMessage(message)) {
+            if (MessageObjectTypeIdentifier.isVoiceMessage(message) || MessageObjectTypeIdentifier.isRoundVideoMessage(message)) {
                 return MEDIA_AUDIO;
-            } else if (MessageObject.isVideoMessage(message)) {
+            } else if (MessageObjectTypeIdentifier.isVideoMessage(message)) {
                 return MEDIA_PHOTOVIDEO;
-            } else if (MessageObject.isStickerMessage(message)) {
+            } else if (MessageObjectTypeIdentifier.isStickerMessage(message)) {
                 return -1;
-            } else if (MessageObject.isMusicMessage(message)) {
+            } else if (MessageObjectTypeIdentifier.isMusicMessage(message)) {
                 return MEDIA_MUSIC;
             } else {
                 return MEDIA_FILE;
@@ -1915,12 +1916,12 @@ public class DataQuery {
     }
 
     public static boolean canAddMessageToMedia(TLRPC.Message message) {
-        if (message instanceof TLRPC.TL_message_secret && (message.media instanceof TLRPC.TL_messageMediaPhoto || MessageObject.isVideoMessage(message) || MessageObject.isGifMessage(message)) && message.media.ttl_seconds != 0 && message.media.ttl_seconds <= 60) {
+        if (message instanceof TLRPC.TL_message_secret && (message.media instanceof TLRPC.TL_messageMediaPhoto || MessageObjectTypeIdentifier.isVideoMessage(message) || MessageObjectTypeIdentifier.isGifMessage(message)) && message.media.ttl_seconds != 0 && message.media.ttl_seconds <= 60) {
             return false;
         } else if (!(message instanceof TLRPC.TL_message_secret) && message instanceof TLRPC.TL_message && (message.media instanceof TLRPC.TL_messageMediaPhoto || message.media instanceof TLRPC.TL_messageMediaDocument) && message.media.ttl_seconds != 0) {
             return false;
         } else if (message.media instanceof TLRPC.TL_messageMediaPhoto ||
-                message.media instanceof TLRPC.TL_messageMediaDocument && !MessageObject.isGifDocument(message.media.document)) {
+                message.media instanceof TLRPC.TL_messageMediaDocument && !MessageObjectTypeIdentifier.isGifDocument(message.media.document)) {
             return true;
         } else if (!message.entities.isEmpty()) {
             for (int a = 0; a < message.entities.size(); a++) {
@@ -2232,7 +2233,7 @@ public class DataQuery {
                             TLRPC.Message message = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
                             message.readAttachPath(data, UserConfig.getInstance(currentAccount).clientUserId);
                             data.reuse();
-                            if (MessageObject.isMusicMessage(message)) {
+                            if (MessageObjectTypeIdentifier.isMusicMessage(message)) {
                                 message.id = cursor.intValue(1);
                                 message.dialog_id = uid;
                                 arrayList.add(0, new MessageObject(currentAccount, message, false));
@@ -3252,7 +3253,7 @@ public class DataQuery {
             final LongSparseArray<ArrayList<MessageObject>> replyMessageRandomOwners = new LongSparseArray<>();
             for (int a = 0; a < messages.size(); a++) {
                 MessageObject messageObject = messages.get(a);
-                if (messageObject.isReply() && messageObject.replyMessageObject == null) {
+                if (MessageObjectTypeIdentifier.isReply() && messageObject.replyMessageObject == null) {
                     long id = messageObject.messageOwner.reply_to_random_id;
                     ArrayList<MessageObject> messageObjects = replyMessageRandomOwners.get(id);
                     if (messageObjects == null) {
@@ -3327,7 +3328,7 @@ public class DataQuery {
             int channelId = 0;
             for (int a = 0; a < messages.size(); a++) {
                 MessageObject messageObject = messages.get(a);
-                if (messageObject.getId() > 0 && messageObject.isReply() && messageObject.replyMessageObject == null) {
+                if (messageObject.getId() > 0 && MessageObjectTypeIdentifier.isReply() && messageObject.replyMessageObject == null) {
                     int id = messageObject.messageOwner.reply_to_msg_id;
                     long messageId = id;
                     if (messageObject.messageOwner.to_id.channel_id != 0) {

@@ -94,13 +94,14 @@ import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaController;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.browser.Browser;
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.messenger.support.widget.GridLayoutManager;
 import org.telegram.messenger.support.widget.LinearLayoutManager;
 import org.telegram.messenger.support.widget.RecyclerView;
@@ -3814,7 +3815,7 @@ public class ArticleViewer implements NotificationCenter.NotificationCenterDeleg
             parentBlock = null;
             cancelLoading = false;
             currentDocument = getDocumentWithId(currentBlock.video_id);
-            isGif = MessageObject.isGifDocument(currentDocument)/* && currentBlock.autoplay*/;
+            isGif = MessageObjectTypeIdentifier.isGifDocument(currentDocument)/* && currentBlock.autoplay*/;
             lastCreatedWidth = 0;
             isFirst = first;
             isLast = last;
@@ -7143,7 +7144,7 @@ public class ArticleViewer implements NotificationCenter.NotificationCenterDeleg
         if (block != null && block.video_id != 0) {
             TLRPC.Document document = getDocumentWithId(block.video_id);
             if (document != null) {
-                return MessageObject.isVideoDocument(document);
+                return MessageObjectTypeIdentifier.isVideoDocument(document);
             }
         }
         return false;

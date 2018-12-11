@@ -25,7 +25,7 @@ import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;

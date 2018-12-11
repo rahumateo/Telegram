@@ -57,6 +57,7 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 
 import org.telegram.messenger.audioinfo.AudioInfo;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.video.InputSurface;
 import org.telegram.messenger.video.MP4Builder;
 import org.telegram.messenger.video.Mp4Movie;

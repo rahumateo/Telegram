@@ -49,7 +49,7 @@ import org.telegram.messenger.DataQuery;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.support.widget.LinearLayoutManager;

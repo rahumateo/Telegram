@@ -66,13 +66,14 @@ import org.telegram.messenger.FileLog;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaController;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.browser.Browser;
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.messenger.support.widget.LinearLayoutManager;
 import org.telegram.messenger.support.widget.LinearSmoothScrollerMiddle;
 import org.telegram.messenger.support.widget.RecyclerView;
@@ -1082,7 +1083,7 @@ public class ChannelAdminLogActivity extends BaseFragment implements Notificatio
                 }
             }
         } else if (type == 3) {
-            if (selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaWebPage && MessageObject.isNewGifDocument(selectedObject.messageOwner.media.webpage.document)) {
+            if (selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaWebPage && MessageObjectTypeIdentifier.isNewGifDocument(selectedObject.messageOwner.media.webpage.document)) {
                 items.add(LocaleController.getString("SaveToGIFs", R.string.SaveToGIFs));
                 options.add(11);
             }
@@ -1098,7 +1099,7 @@ public class ChannelAdminLogActivity extends BaseFragment implements Notificatio
                 items.add(LocaleController.getString("ShareFile", R.string.ShareFile));
                 options.add(6);
             } else if (selectedObject.getDocument() != null) {
-                if (MessageObject.isNewGifDocument(selectedObject.getDocument())) {
+                if (MessageObjectTypeIdentifier.isNewGifDocument(selectedObject.getDocument())) {
                     items.add(LocaleController.getString("SaveToGIFs", R.string.SaveToGIFs));
                     options.add(11);
                 }

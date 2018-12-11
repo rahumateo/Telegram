@@ -34,6 +34,7 @@ import android.widget.RemoteViews;
 import com.google.android.exoplayer2.C;
 
 import org.telegram.messenger.audioinfo.AudioInfo;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.ui.LaunchActivity;
 
 public class MusicPlayerService extends Service implements NotificationCenter.NotificationCenterDelegate {

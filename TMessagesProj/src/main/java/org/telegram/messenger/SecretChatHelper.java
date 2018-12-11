@@ -15,6 +15,8 @@ import android.util.LongSparseArray;
 import android.util.SparseArray;
 
 import org.telegram.SQLite.SQLiteCursor;
+import org.telegram.messenger.message.MessageObject;
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.tgnet.AbstractSerializedData;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.NativeByteBuffer;
@@ -712,7 +714,7 @@ public class SecretChatHelper {
                                     newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SENT;
                                     NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.messageReceivedByServer, newMsgObj.id, newMsgObj.id, newMsgObj, newMsgObj.dialog_id, 0L);
                                     SendMessagesHelper.getInstance(currentAccount).processSentMessage(newMsgObj.id);
-                                    if (MessageObject.isVideoMessage(newMsgObj) || MessageObject.isNewGifMessage(newMsgObj) || MessageObject.isRoundVideoMessage(newMsgObj)) {
+                                    if (MessageObjectTypeIdentifier.isVideoMessage(newMsgObj) || MessageObjectTypeIdentifier.isNewGifMessage(newMsgObj) || MessageObjectTypeIdentifier.isRoundVideoMessage(newMsgObj)) {
                                         SendMessagesHelper.getInstance(currentAccount).stopVideoService(attachPath);
                                     }
                                     SendMessagesHelper.getInstance(currentAccount).removeFromSendingMessages(newMsgObj.id);
@@ -724,7 +726,7 @@ public class SecretChatHelper {
                                 newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
                                 NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.messageSendError, newMsgObj.id);
                                 SendMessagesHelper.getInstance(currentAccount).processSentMessage(newMsgObj.id);
-                                if (MessageObject.isVideoMessage(newMsgObj) || MessageObject.isNewGifMessage(newMsgObj) || MessageObject.isRoundVideoMessage(newMsgObj)) {
+                                if (MessageObjectTypeIdentifier.isVideoMessage(newMsgObj) || MessageObjectTypeIdentifier.isNewGifMessage(newMsgObj) || MessageObjectTypeIdentifier.isRoundVideoMessage(newMsgObj)) {
                                     SendMessagesHelper.getInstance(currentAccount).stopVideoService(newMsgObj.attachPath);
                                 }
                                 SendMessagesHelper.getInstance(currentAccount).removeFromSendingMessages(newMsgObj.id);
@@ -963,7 +965,7 @@ public class SecretChatHelper {
                         newMessage.media.document.thumb.type = "s";
                     }
                     newMessage.media.document.dc_id = file.dc_id;
-                    if (MessageObject.isVoiceMessage(newMessage) || MessageObject.isRoundVideoMessage(newMessage)) {
+                    if (MessageObjectTypeIdentifier.isVoiceMessage(newMessage) || MessageObjectTypeIdentifier.isRoundVideoMessage(newMessage)) {
                         newMessage.media_unread = true;
                     }
                 } else if (decryptedMessage.media instanceof TLRPC.TL_decryptedMessageMediaExternalDocument) {

@@ -16,6 +16,7 @@ import com.google.firebase.messaging.RemoteMessage;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.NativeByteBuffer;
 import org.telegram.tgnet.TLRPC;

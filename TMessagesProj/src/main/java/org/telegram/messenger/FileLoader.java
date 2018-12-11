@@ -12,9 +12,9 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 
-import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.TransferListener;
 
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 
@@ -368,12 +368,12 @@ public class FileLoader {
                 FileLoadOperation operation = loadOperationPaths.remove(fileName);
                 if (operation != null) {
                     int datacenterId = operation.getDatacenterId();
-                    if (MessageObject.isVoiceDocument(document) || MessageObject.isVoiceWebDocument(webDocument)) {
+                    if (MessageObjectTypeIdentifier.isVoiceDocument(document) || MessageObjectTypeIdentifier.isVoiceWebDocument(webDocument)) {
                         LinkedList<FileLoadOperation> audioLoadOperationQueue = getAudioLoadOperationQueue(datacenterId);
                         if (!audioLoadOperationQueue.remove(operation)) {
                             currentAudioLoadOperationsCount.put(datacenterId, currentAudioLoadOperationsCount.get(datacenterId) - 1);
                         }
-                    } else if (secureDocument != null || location != null || MessageObject.isImageWebDocument(webDocument)) {
+                    } else if (secureDocument != null || location != null || MessageObjectTypeIdentifier.isImageWebDocument(webDocument)) {
                         LinkedList<FileLoadOperation> photoLoadOperationQueue = getPhotoLoadOperationQueue(datacenterId);
                         if (!photoLoadOperationQueue.remove(operation)) {
                             currentPhotoLoadOperationsCount.put(datacenterId, currentPhotoLoadOperationsCount.get(datacenterId) - 1);
@@ -496,9 +496,9 @@ public class FileLoader {
 
                 operation.setForceRequest(true);
                 LinkedList<FileLoadOperation> downloadQueue;
-                if (MessageObject.isVoiceDocument(document) || MessageObject.isVoiceWebDocument(webDocument)) {
+                if (MessageObjectTypeIdentifier.isVoiceDocument(document) || MessageObjectTypeIdentifier.isVoiceWebDocument(webDocument)) {
                     downloadQueue = audioLoadOperationQueue;
-                } else if (secureDocument != null || location != null || MessageObject.isImageWebDocument(webDocument)) {
+                } else if (secureDocument != null || location != null || MessageObjectTypeIdentifier.isImageWebDocument(webDocument)) {
                     downloadQueue = photoLoadOperationQueue;
                 } else {
                     downloadQueue = loadOperationQueue;
@@ -556,20 +556,20 @@ public class FileLoader {
             type = MEDIA_DIR_IMAGE;
         } else if (document != null) {
             operation = new FileLoadOperation(document);
-            if (MessageObject.isVoiceDocument(document)) {
+            if (MessageObjectTypeIdentifier.isVoiceDocument(document)) {
                 type = MEDIA_DIR_AUDIO;
-            } else if (MessageObject.isVideoDocument(document)) {
+            } else if (MessageObjectTypeIdentifier.isVideoDocument(document)) {
                 type = MEDIA_DIR_VIDEO;
             } else {
                 type = MEDIA_DIR_DOCUMENT;
             }
         } else if (webDocument != null) {
             operation = new FileLoadOperation(currentAccount, webDocument);
-            if (MessageObject.isVoiceWebDocument(webDocument)) {
+            if (MessageObjectTypeIdentifier.isVoiceWebDocument(webDocument)) {
                 type = MEDIA_DIR_AUDIO;
-            } else if (MessageObject.isVideoWebDocument(webDocument)) {
+            } else if (MessageObjectTypeIdentifier.isVideoWebDocument(webDocument)) {
                 type = MEDIA_DIR_VIDEO;
-            } else if (MessageObject.isImageWebDocument(webDocument)) {
+            } else if (MessageObjectTypeIdentifier.isImageWebDocument(webDocument)) {
                 type = MEDIA_DIR_IMAGE;
             } else {
                 type = MEDIA_DIR_DOCUMENT;
@@ -633,7 +633,7 @@ public class FileLoader {
                     audioLoadOperationQueue.add(operation);
                 }
             }
-        } else if (location != null || MessageObject.isImageWebDocument(webDocument)) {
+        } else if (location != null || MessageObjectTypeIdentifier.isImageWebDocument(webDocument)) {
             int count = currentPhotoLoadOperationsCount.get(datacenterId);
             if (streamOffset != 0 || count < maxCount) {
                 if (operation.start(stream, streamOffset)) {
@@ -716,7 +716,7 @@ public class FileLoader {
                 LinkedList<FileLoadOperation> loadOperationQueue = getLoadOperationQueue(datacenterId);
 
                 FileLoadOperation operation = loadOperationPaths.remove(arg1);
-                if (MessageObject.isVoiceDocument(document) || MessageObject.isVoiceWebDocument(webDocument)) {
+                if (MessageObjectTypeIdentifier.isVoiceDocument(document) || MessageObjectTypeIdentifier.isVoiceWebDocument(webDocument)) {
                     int count = currentAudioLoadOperationsCount.get(datacenterId);
                     if (operation != null) {
                         if (operation.wasStarted()) {
@@ -739,7 +739,7 @@ public class FileLoader {
                             break;
                         }
                     }
-                } else if (location != null || MessageObject.isImageWebDocument(webDocument)) {
+                } else if (location != null || MessageObjectTypeIdentifier.isImageWebDocument(webDocument)) {
                     int count = currentPhotoLoadOperationsCount.get(datacenterId);
                     if (operation != null) {
                         if (operation.wasStarted()) {
@@ -909,9 +909,9 @@ public class FileLoader {
                 if (document.key != null) {
                     dir = getDirectory(MEDIA_DIR_CACHE);
                 } else {
-                    if (MessageObject.isVoiceDocument(document)) {
+                    if (MessageObjectTypeIdentifier.isVoiceDocument(document)) {
                         dir = getDirectory(MEDIA_DIR_AUDIO);
-                    } else if (MessageObject.isVideoDocument(document)) {
+                    } else if (MessageObjectTypeIdentifier.isVideoDocument(document)) {
                         dir = getDirectory(MEDIA_DIR_VIDEO);
                     } else {
                         dir = getDirectory(MEDIA_DIR_DOCUMENT);

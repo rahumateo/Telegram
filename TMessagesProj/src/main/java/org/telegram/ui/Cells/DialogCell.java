@@ -25,7 +25,7 @@ import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.DataQuery;
 import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.FileLog;
 import org.telegram.tgnet.TLObject;

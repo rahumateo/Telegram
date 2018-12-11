@@ -95,6 +95,7 @@ import org.telegram.messenger.UserObject;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.VideoEditedInfo;
 import org.telegram.messenger.browser.Browser;
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.messenger.support.widget.GridLayoutManager;
 import org.telegram.messenger.support.widget.GridLayoutManagerFixed;
@@ -107,7 +108,7 @@ import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.FileLog;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
@@ -10528,7 +10529,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                             options.add(22);
                         }
                         if (type == 3) {
-                            if (selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaWebPage && MessageObject.isNewGifDocument(selectedObject.messageOwner.media.webpage.document)) {
+                            if (selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaWebPage && MessageObjectTypeIdentifier.isNewGifDocument(selectedObject.messageOwner.media.webpage.document)) {
                                 items.add(LocaleController.getString("SaveToGIFs", R.string.SaveToGIFs));
                                 options.add(11);
                             }
@@ -10546,7 +10547,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 items.add(LocaleController.getString("ShareFile", R.string.ShareFile));
                                 options.add(6);
                             } else if (selectedObject.getDocument() != null) {
-                                if (MessageObject.isNewGifDocument(selectedObject.getDocument())) {
+                                if (MessageObjectTypeIdentifier.isNewGifDocument(selectedObject.getDocument())) {
                                     items.add(LocaleController.getString("SaveToGIFs", R.string.SaveToGIFs));
                                     options.add(11);
                                 }

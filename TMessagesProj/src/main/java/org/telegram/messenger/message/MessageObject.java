@@ -6,7 +6,7 @@
  * Copyright Nikolai Kudashov, 2013-2017.
  */
 
-package org.telegram.messenger;
+package org.telegram.messenger.message;
 
 import android.graphics.Typeface;
 import android.os.Build;
@@ -24,6 +24,7 @@ import android.util.Base64;
 import android.util.SparseArray;
 
 import org.telegram.PhoneFormat.PhoneFormat;
+import org.telegram.messenger.*;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.SerializedData;
@@ -49,6 +50,10 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
+
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 
 public class MessageObject {
 
@@ -2016,7 +2021,7 @@ public class MessageObject {
                 type = 0;
             } else if (messageOwner.media instanceof TLRPC.TL_messageMediaDocument) {
                 if (messageOwner.media.document != null && messageOwner.media.document.mime_type != null) {
-                    if (isGifDocument(messageOwner.media.document)) {
+                    if (MessageObjectTypeIdentifier.isGifDocument(messageOwner.media.document)) {
                         type = 8;
                     } else if (messageOwner.media.document.mime_type.equals("image/webp") && isSticker()) {
                         type = 13;
@@ -2107,76 +2112,6 @@ public class MessageObject {
             }
         }
         return "";
-    }
-
-    public static boolean isGifDocument(WebFile document) {
-        return document != null && (document.mime_type.equals("image/gif") || isNewGifDocument(document));
-    }
-
-    public static boolean isGifDocument(TLRPC.Document document) {
-        return document != null && document.thumb != null && document.mime_type != null && (document.mime_type.equals("image/gif") || isNewGifDocument(document));
-    }
-
-    public static boolean isRoundVideoDocument(TLRPC.Document document) {
-        if (document != null && document.mime_type != null && document.mime_type.equals("video/mp4")) {
-            int width = 0;
-            int height = 0;
-            boolean round = false;
-            for (int a = 0; a < document.attributes.size(); a++) {
-                TLRPC.DocumentAttribute attribute = document.attributes.get(a);
-                if (attribute instanceof TLRPC.TL_documentAttributeVideo) {
-                    width = attribute.w;
-                    height = attribute.w;
-                    round = attribute.round_message;
-                }
-            }
-            if (round && width <= 1280 && height <= 1280) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean isNewGifDocument(WebFile document) {
-        if (document != null && document.mime_type != null && document.mime_type.equals("video/mp4")) {
-            int width = 0;
-            int height = 0;
-            boolean animated = false;
-            for (int a = 0; a < document.attributes.size(); a++) {
-                TLRPC.DocumentAttribute attribute = document.attributes.get(a);
-                if (attribute instanceof TLRPC.TL_documentAttributeAnimated) {
-                    animated = true;
-                } else if (attribute instanceof TLRPC.TL_documentAttributeVideo) {
-                    width = attribute.w;
-                    height = attribute.w;
-                }
-            }
-            if (/*animated && */width <= 1280 && height <= 1280) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean isNewGifDocument(TLRPC.Document document) {
-        if (document != null && document.mime_type != null && document.mime_type.equals("video/mp4")) {
-            int width = 0;
-            int height = 0;
-            boolean animated = false;
-            for (int a = 0; a < document.attributes.size(); a++) {
-                TLRPC.DocumentAttribute attribute = document.attributes.get(a);
-                if (attribute instanceof TLRPC.TL_documentAttributeAnimated) {
-                    animated = true;
-                } else if (attribute instanceof TLRPC.TL_documentAttributeVideo) {
-                    width = attribute.w;
-                    height = attribute.w;
-                }
-            }
-            if (animated && width <= 1280 && height <= 1280) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void generateThumbs(boolean update) {
@@ -3107,7 +3042,7 @@ public class MessageObject {
 
     public static boolean shouldEncryptPhotoOrVideo(TLRPC.Message message) {
         if (message instanceof TLRPC.TL_message_secret) {
-            return (message.media instanceof TLRPC.TL_messageMediaPhoto || isVideoMessage(message)) && message.ttl > 0 && message.ttl <= 60;
+            return (message.media instanceof TLRPC.TL_messageMediaPhoto || MessageObjectTypeIdentifier.isVideoMessage(message)) && message.ttl > 0 && message.ttl <= 60;
         } else {
             return (message.media instanceof TLRPC.TL_messageMediaPhoto || message.media instanceof TLRPC.TL_messageMediaDocument) && message.media.ttl_seconds != 0;
         }
@@ -3115,15 +3050,6 @@ public class MessageObject {
 
     public boolean shouldEncryptPhotoOrVideo() {
         return shouldEncryptPhotoOrVideo(messageOwner);
-    }
-
-    public static boolean isSecretPhotoOrVideo(TLRPC.Message message) {
-        if (message instanceof TLRPC.TL_message_secret) {
-            return (message.media instanceof TLRPC.TL_messageMediaPhoto || isRoundVideoMessage(message) || isVideoMessage(message)) && message.ttl > 0 && message.ttl <= 60;
-        } else if (message instanceof TLRPC.TL_message) {
-            return (message.media instanceof TLRPC.TL_messageMediaPhoto || message.media instanceof TLRPC.TL_messageMediaDocument) && message.media.ttl_seconds != 0;
-        }
-        return false;
     }
 
     public boolean needDrawBluredPreview() {
@@ -3150,16 +3076,8 @@ public class MessageObject {
         message.media_unread = (flag & 2) == 0;
     }
 
-    public static boolean isUnread(TLRPC.Message message) {
-        return message.unread;
-    }
-
-    public static boolean isContentUnread(TLRPC.Message message) {
-        return message.media_unread;
-    }
-
     public boolean isMegagroup() {
-        return isMegagroup(messageOwner);
+        return MessageObjectTypeIdentifier.isMegagroup(messageOwner);
     }
 
     public boolean isSavedFromMegagroup() {
@@ -3168,14 +3086,6 @@ public class MessageObject {
             return ChatObject.isMegagroup(chat);
         }
         return false;
-    }
-
-    public static boolean isMegagroup(TLRPC.Message message) {
-        return (message.flags & TLRPC.MESSAGE_FLAG_MEGAGROUP) != 0;
-    }
-
-    public static boolean isOut(TLRPC.Message message) {
-        return message.out;
     }
 
     public long getDialogId() {
@@ -3209,7 +3119,7 @@ public class MessageObject {
                 }
             } else if (message.to_id.channel_id != 0) {
                 message.dialog_id = -message.to_id.channel_id;
-            } else if (isOut(message)) {
+            } else if (MessageObjectTypeIdentifier.isOut(message)) {
                 message.dialog_id = message.to_id.user_id;
             } else {
                 message.dialog_id = message.from_id;
@@ -3266,172 +3176,11 @@ public class MessageObject {
         return "";
     }
 
-    public static boolean isStickerDocument(TLRPC.Document document) {
-        if (document != null) {
-            for (int a = 0; a < document.attributes.size(); a++) {
-                TLRPC.DocumentAttribute attribute = document.attributes.get(a);
-                if (attribute instanceof TLRPC.TL_documentAttributeSticker) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static boolean isMaskDocument(TLRPC.Document document) {
-        if (document != null) {
-            for (int a = 0; a < document.attributes.size(); a++) {
-                TLRPC.DocumentAttribute attribute = document.attributes.get(a);
-                if (attribute instanceof TLRPC.TL_documentAttributeSticker && attribute.mask) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static boolean isVoiceDocument(TLRPC.Document document) {
-        if (document != null) {
-            for (int a = 0; a < document.attributes.size(); a++) {
-                TLRPC.DocumentAttribute attribute = document.attributes.get(a);
-                if (attribute instanceof TLRPC.TL_documentAttributeAudio) {
-                    return attribute.voice;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static boolean isVoiceWebDocument(WebFile webDocument) {
-        return webDocument != null && webDocument.mime_type.equals("audio/ogg");
-    }
-
-    public static boolean isImageWebDocument(WebFile webDocument) {
-        return webDocument != null && !isGifDocument(webDocument) && webDocument.mime_type.startsWith("image/");
-    }
-
-    public static boolean isVideoWebDocument(WebFile webDocument) {
-        return webDocument != null && webDocument.mime_type.startsWith("video/");
-    }
-
-    public static boolean isMusicDocument(TLRPC.Document document) {
-        if (document != null) {
-            for (int a = 0; a < document.attributes.size(); a++) {
-                TLRPC.DocumentAttribute attribute = document.attributes.get(a);
-                if (attribute instanceof TLRPC.TL_documentAttributeAudio) {
-                    return !attribute.voice;
-                }
-            }
-            if (!TextUtils.isEmpty(document.mime_type)) {
-                String mime = document.mime_type.toLowerCase();
-                if (mime.equals("audio/flac") || mime.equals("audio/ogg") || mime.equals("audio/opus") || mime.equals("audio/x-opus+ogg")) {
-                    return true;
-                } else if (mime.equals("application/octet-stream") && FileLoader.getDocumentFileName(document).endsWith(".opus")) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static boolean isVideoDocument(TLRPC.Document document) {
-        if (document != null) {
-            boolean isAnimated = false;
-            boolean isVideo = false;
-            int width = 0;
-            int height = 0;
-            for (int a = 0; a < document.attributes.size(); a++) {
-                TLRPC.DocumentAttribute attribute = document.attributes.get(a);
-                if (attribute instanceof TLRPC.TL_documentAttributeVideo) {
-                    if (attribute.round_message) {
-                        return false;
-                    }
-                    isVideo = true;
-                    width = attribute.w;
-                    height = attribute.h;
-                } else if (attribute instanceof TLRPC.TL_documentAttributeAnimated) {
-                    isAnimated = true;
-                }
-            }
-            if (isAnimated && (width > 1280 || height > 1280)) {
-                isAnimated = false;
-            }
-            return isVideo && !isAnimated;
-        }
-        return false;
-    }
-
     public TLRPC.Document getDocument() {
         if (messageOwner.media instanceof TLRPC.TL_messageMediaWebPage) {
             return messageOwner.media.webpage.document;
         }
         return messageOwner.media != null ? messageOwner.media.document : null;
-    }
-
-    public static boolean isStickerMessage(TLRPC.Message message) {
-        return message.media != null && message.media.document != null && isStickerDocument(message.media.document);
-    }
-
-    public static boolean isMaskMessage(TLRPC.Message message) {
-        return message.media != null && message.media.document != null && isMaskDocument(message.media.document);
-    }
-
-    public static boolean isMusicMessage(TLRPC.Message message) {
-        if (message.media instanceof TLRPC.TL_messageMediaWebPage) {
-            return isMusicDocument(message.media.webpage.document);
-        }
-        return message.media != null && message.media.document != null && isMusicDocument(message.media.document);
-    }
-
-    public static boolean isGifMessage(TLRPC.Message message) {
-        return message.media != null && message.media.document != null && isGifDocument(message.media.document);
-    }
-
-    public static boolean isRoundVideoMessage(TLRPC.Message message) {
-        if (message.media instanceof TLRPC.TL_messageMediaWebPage) {
-            return isRoundVideoDocument(message.media.webpage.document);
-        }
-        return message.media != null && message.media.document != null && isRoundVideoDocument(message.media.document);
-    }
-
-    public static boolean isPhoto(TLRPC.Message message) {
-        if (message.media instanceof TLRPC.TL_messageMediaWebPage) {
-            return message.media.webpage.photo instanceof TLRPC.TL_photo;
-        }
-        return message.media instanceof TLRPC.TL_messageMediaPhoto;
-    }
-
-    public static boolean isVoiceMessage(TLRPC.Message message) {
-        if (message.media instanceof TLRPC.TL_messageMediaWebPage) {
-            return isVoiceDocument(message.media.webpage.document);
-        }
-        return message.media != null && message.media.document != null && isVoiceDocument(message.media.document);
-    }
-
-    public static boolean isNewGifMessage(TLRPC.Message message) {
-        if (message.media instanceof TLRPC.TL_messageMediaWebPage) {
-            return isNewGifDocument(message.media.webpage.document);
-        }
-        return message.media != null && message.media.document != null && isNewGifDocument(message.media.document);
-    }
-
-    public static boolean isLiveLocationMessage(TLRPC.Message message) {
-        return message.media instanceof TLRPC.TL_messageMediaGeoLive;
-    }
-
-    public static boolean isVideoMessage(TLRPC.Message message) {
-        if (message.media instanceof TLRPC.TL_messageMediaWebPage) {
-            return isVideoDocument(message.media.webpage.document);
-        }
-        return message.media != null && message.media.document != null && isVideoDocument(message.media.document);
-    }
-
-    public static boolean isGameMessage(TLRPC.Message message) {
-        return message.media instanceof TLRPC.TL_messageMediaGame;
-    }
-
-    public static boolean isInvoiceMessage(TLRPC.Message message) {
-        return message.media instanceof TLRPC.TL_messageMediaInvoice;
     }
 
     public static TLRPC.InputStickerSet getInputStickerSet(TLRPC.Message message) {
@@ -3583,40 +3332,40 @@ public class MessageObject {
         if (type != 1000) {
             return type == 13;
         }
-        return isStickerMessage(messageOwner);
+        return MessageObjectTypeIdentifier.isStickerMessage(messageOwner);
     }
 
     public boolean isMask() {
-        return isMaskMessage(messageOwner);
+        return MessageObjectTypeIdentifier.isMaskMessage(messageOwner);
     }
 
     public boolean isMusic() {
-        return isMusicMessage(messageOwner);
+        return MessageObjectTypeIdentifier.isMusicMessage(messageOwner);
     }
 
     public boolean isVoice() {
-        return isVoiceMessage(messageOwner);
+        return MessageObjectTypeIdentifier.isVoiceMessage(messageOwner);
     }
 
     public boolean isVideo() {
-        return isVideoMessage(messageOwner);
+        return MessageObjectTypeIdentifier.isVideoMessage(messageOwner);
     }
 
     public boolean isLiveLocation() {
-        return isLiveLocationMessage(messageOwner);
+        return MessageObjectTypeIdentifier.isLiveLocationMessage(messageOwner);
     }
 
     public boolean isGame() {
-        return isGameMessage(messageOwner);
+        return MessageObjectTypeIdentifier.isGameMessage(messageOwner);
     }
 
     public boolean isInvoice() {
-        return isInvoiceMessage(messageOwner);
+        return MessageObjectTypeIdentifier.isInvoiceMessage(messageOwner);
     }
 
     public boolean isRoundVideo() {
         if (isRoundVideoCached == 0) {
-            isRoundVideoCached = type == 5 || isRoundVideoMessage(messageOwner) ? 1 : 2;
+            isRoundVideoCached = type == 5 || MessageObjectTypeIdentifier.isRoundVideoMessage(messageOwner) ? 1 : 2;
         }
         return isRoundVideoCached == 1;
     }
@@ -3626,11 +3375,11 @@ public class MessageObject {
     }
 
     public boolean isGif() {
-        return isGifMessage(messageOwner);
+        return MessageObjectTypeIdentifier.isGifMessage(messageOwner);
     }
 
     public boolean isWebpageDocument() {
-        return messageOwner.media instanceof TLRPC.TL_messageMediaWebPage && messageOwner.media.webpage.document != null && !isGifDocument(messageOwner.media.webpage.document);
+        return messageOwner.media instanceof TLRPC.TL_messageMediaWebPage && messageOwner.media.webpage.document != null && !MessageObjectTypeIdentifier.isGifDocument(messageOwner.media.webpage.document);
     }
 
     public boolean isWebpage() {
@@ -3638,7 +3387,7 @@ public class MessageObject {
     }
 
     public boolean isNewGif() {
-        return messageOwner.media != null && isNewGifDocument(messageOwner.media.document);
+        return messageOwner.media != null && MessageObjectTypeIdentifier.isNewGifDocument(messageOwner.media.document);
     }
 
     public String getMusicTitle() {
@@ -3768,15 +3517,11 @@ public class MessageObject {
     }
 
     public boolean isForwarded() {
-        return isForwardedMessage(messageOwner);
+        return MessageObjectTypeIdentifier.isForwardedMessage(messageOwner);
     }
 
     public boolean needDrawForwarded() {
         return (messageOwner.flags & TLRPC.MESSAGE_FLAG_FWD) != 0 && messageOwner.fwd_from != null && messageOwner.fwd_from.saved_from_peer == null && UserConfig.getInstance(currentAccount).getClientUserId() != getDialogId();
-    }
-
-    public static boolean isForwardedMessage(TLRPC.Message message) {
-        return (message.flags & TLRPC.MESSAGE_FLAG_FWD) != 0 && message.fwd_from != null;
     }
 
     public boolean isReply() {
@@ -3784,11 +3529,7 @@ public class MessageObject {
     }
 
     public boolean isMediaEmpty() {
-        return isMediaEmpty(messageOwner);
-    }
-
-    public static boolean isMediaEmpty(TLRPC.Message message) {
-        return message == null || message.media == null || message.media instanceof TLRPC.TL_messageMediaEmpty || message.media instanceof TLRPC.TL_messageMediaWebPage;
+        return MessageObjectTypeIdentifier.isMediaEmpty(messageOwner);
     }
 
     public boolean canEditMessage(TLRPC.Chat chat) {
@@ -3811,10 +3552,10 @@ public class MessageObject {
     }
 
     public static boolean canEditMessageAnytime(int currentAccount, TLRPC.Message message, TLRPC.Chat chat) {
-        if (message == null || message.to_id == null || message.media != null && (isRoundVideoDocument(message.media.document) || isStickerDocument(message.media.document)) || message.action != null && !(message.action instanceof TLRPC.TL_messageActionEmpty) || isForwardedMessage(message) || message.via_bot_id != 0 || message.id < 0) {
+        if (message == null || message.to_id == null || message.media != null && (MessageObjectTypeIdentifier.isRoundVideoDocument(message.media.document) || MessageObjectTypeIdentifier.isStickerDocument(message.media.document)) || message.action != null && !(message.action instanceof TLRPC.TL_messageActionEmpty) || MessageObjectTypeIdentifier.isForwardedMessage(message) || message.via_bot_id != 0 || message.id < 0) {
             return false;
         }
-        if (message.from_id == message.to_id.user_id && message.from_id == UserConfig.getInstance(currentAccount).getClientUserId() && !isLiveLocationMessage(message)) {
+        if (message.from_id == message.to_id.user_id && message.from_id == UserConfig.getInstance(currentAccount).getClientUserId() && !MessageObjectTypeIdentifier.isLiveLocationMessage(message)) {
             return true;
         }
         if (chat == null && message.to_id.channel_id != 0) {
@@ -3834,10 +3575,10 @@ public class MessageObject {
         if (chat != null && (chat.left || chat.kicked)) {
             return false;
         }
-        if (message == null || message.to_id == null || message.media != null && (isRoundVideoDocument(message.media.document) || isStickerDocument(message.media.document)) || message.action != null && !(message.action instanceof TLRPC.TL_messageActionEmpty) || isForwardedMessage(message) || message.via_bot_id != 0 || message.id < 0) {
+        if (message == null || message.to_id == null || message.media != null && (MessageObjectTypeIdentifier.isRoundVideoDocument(message.media.document) || MessageObjectTypeIdentifier.isStickerDocument(message.media.document)) || message.action != null && !(message.action instanceof TLRPC.TL_messageActionEmpty) || MessageObjectTypeIdentifier.isForwardedMessage(message) || message.via_bot_id != 0 || message.id < 0) {
             return false;
         }
-        if (message.from_id == message.to_id.user_id && message.from_id == UserConfig.getInstance(currentAccount).getClientUserId() && !isLiveLocationMessage(message) && !(message.media instanceof TLRPC.TL_messageMediaContact)) {
+        if (message.from_id == message.to_id.user_id && message.from_id == UserConfig.getInstance(currentAccount).getClientUserId() && !MessageObjectTypeIdentifier.isLiveLocationMessage(message) && !(message.media instanceof TLRPC.TL_messageMediaContact)) {
             return true;
         }
         if (chat == null && message.to_id.channel_id != 0) {
@@ -3857,7 +3598,7 @@ public class MessageObject {
         }
         if (message.to_id.channel_id == 0) {
             return (message.out || message.from_id == UserConfig.getInstance(currentAccount).getClientUserId()) && (message.media instanceof TLRPC.TL_messageMediaPhoto ||
-                    message.media instanceof TLRPC.TL_messageMediaDocument && !isStickerMessage(message) ||
+                    message.media instanceof TLRPC.TL_messageMediaDocument && !MessageObjectTypeIdentifier.isStickerMessage(message) ||
                     message.media instanceof TLRPC.TL_messageMediaEmpty ||
                     message.media instanceof TLRPC.TL_messageMediaWebPage ||
                     message.media == null);
@@ -3888,7 +3629,7 @@ public class MessageObject {
         if (ChatObject.isChannel(chat)) {
             return message.id != 1 && (chat.creator || chat.admin_rights != null && (chat.admin_rights.delete_messages || message.out) || chat.megagroup && message.out && message.from_id > 0);
         }
-        return isOut(message) || !ChatObject.isChannel(chat);
+        return MessageObjectTypeIdentifier.isOut(message) || !ChatObject.isChannel(chat);
     }
 
     public String getForwardedName() {

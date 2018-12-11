@@ -29,11 +29,12 @@ import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaController;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.WebFile;
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.Components.LetterDrawable;
 import org.telegram.ui.Components.RadialProgress;
@@ -172,9 +173,9 @@ public class ContextLinkCell extends View implements DownloadController.FileDown
 
         String ext = null;
         if (documentAttach != null) {
-            if (MessageObject.isGifDocument(documentAttach)) {
+            if (MessageObjectTypeIdentifier.isGifDocument(documentAttach)) {
                 currentPhotoObject = documentAttach.thumb;
-            } else if (MessageObject.isStickerDocument(documentAttach)) {
+            } else if (MessageObjectTypeIdentifier.isStickerDocument(documentAttach)) {
                 currentPhotoObject = documentAttach.thumb;
                 ext = "webp";
             } else {
@@ -327,13 +328,13 @@ public class ContextLinkCell extends View implements DownloadController.FileDown
         currentMessageObject = null;
         documentAttachType = DOCUMENT_ATTACH_TYPE_NONE;
         if (documentAttach != null) {
-            if (MessageObject.isGifDocument(documentAttach)) {
+            if (MessageObjectTypeIdentifier.isGifDocument(documentAttach)) {
                 documentAttachType = DOCUMENT_ATTACH_TYPE_GIF;
-            } else if (MessageObject.isStickerDocument(documentAttach)) {
+            } else if (MessageObjectTypeIdentifier.isStickerDocument(documentAttach)) {
                 documentAttachType = DOCUMENT_ATTACH_TYPE_STICKER;
-            } else if (MessageObject.isMusicDocument(documentAttach)) {
+            } else if (MessageObjectTypeIdentifier.isMusicDocument(documentAttach)) {
                 documentAttachType = DOCUMENT_ATTACH_TYPE_MUSIC;
-            } else if (MessageObject.isVoiceDocument(documentAttach)) {
+            } else if (MessageObjectTypeIdentifier.isVoiceDocument(documentAttach)) {
                 documentAttachType = DOCUMENT_ATTACH_TYPE_AUDIO;
             }
         } else if (inlineResult != null) {

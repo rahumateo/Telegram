@@ -38,6 +38,8 @@ import android.util.SparseArray;
 
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.messenger.audioinfo.AudioInfo;
+import org.telegram.messenger.message.MessageObject;
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.tgnet.NativeByteBuffer;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.LaunchActivity;
@@ -181,7 +183,7 @@ public class MusicBrowserService extends MediaBrowserService implements Notifica
                                     TLRPC.Message message = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
                                     message.readAttachPath(data, UserConfig.getInstance(currentAccount).clientUserId);
                                     data.reuse();
-                                    if (MessageObject.isMusicMessage(message)) {
+                                    if (MessageObjectTypeIdentifier.isMusicMessage(message)) {
                                         int did = cursor.intValue(0);
                                         message.id = cursor.intValue(2);
                                         message.dialog_id = did;

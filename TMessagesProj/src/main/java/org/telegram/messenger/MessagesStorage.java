@@ -18,6 +18,8 @@ import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.SQLite.SQLiteDatabase;
 import org.telegram.SQLite.SQLitePreparedStatement;
+import org.telegram.messenger.message.MessageObject;
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.NativeByteBuffer;
@@ -1067,7 +1069,7 @@ public class MessagesStorage {
                             int lower_id = (int) message.dialog_id;
                             addUsersAndChatsFromMessage(message, usersToLoad, chatsToLoad);
                             message.send_state = cursor.intValue(2);
-                            if (message.to_id.channel_id == 0 && !MessageObject.isUnread(message) && lower_id != 0 || message.id > 0) {
+                            if (message.to_id.channel_id == 0 && !MessageObjectTypeIdentifier.isUnread(message) && lower_id != 0 || message.id > 0) {
                                 message.send_state = 0;
                             }
                             if (lower_id == 0 && !cursor.isNull(5)) {
@@ -1086,7 +1088,7 @@ public class MessagesStorage {
                                             message.replyMessage.readAttachPath(data, UserConfig.getInstance(currentAccount).clientUserId);
                                             data.reuse();
                                             if (message.replyMessage != null) {
-                                                if (MessageObject.isMegagroup(message)) {
+                                                if (MessageObjectTypeIdentifier.isMegagroup(message)) {
                                                     message.replyMessage.flags |= TLRPC.MESSAGE_FLAG_MEGAGROUP;
                                                 }
                                                 addUsersAndChatsFromMessage(message.replyMessage, usersToLoad, chatsToLoad);
@@ -1135,7 +1137,7 @@ public class MessagesStorage {
                                     for (int a = 0; a < arrayList.size(); a++) {
                                         TLRPC.Message m = arrayList.get(a);
                                         m.replyMessage = message;
-                                        if (MessageObject.isMegagroup(m)) {
+                                        if (MessageObjectTypeIdentifier.isMegagroup(m)) {
                                             m.replyMessage.flags |= TLRPC.MESSAGE_FLAG_MEGAGROUP;
                                         }
                                     }
@@ -1876,7 +1878,7 @@ public class MessagesStorage {
                         state.bindInteger(4, message.send_state);
                         state.bindInteger(5, message.date);
                         state.bindByteBuffer(6, data);
-                        state.bindInteger(7, (MessageObject.isOut(message) ? 1 : 0));
+                        state.bindInteger(7, (MessageObjectTypeIdentifier.isOut(message) ? 1 : 0));
                         state.bindInteger(8, message.ttl);
                         if ((message.flags & TLRPC.MESSAGE_FLAG_HAS_VIEWS) != 0) {
                             state.bindInteger(9, message.views);
@@ -3163,7 +3165,7 @@ public class MessagesStorage {
 
                             addUsersAndChatsFromMessage(message, usersToLoad, chatsToLoad);
 
-                            if (message.send_state != 3 && (message.to_id.channel_id == 0 && !MessageObject.isUnread(message) && lower_id != 0 || message.id > 0)) {
+                            if (message.send_state != 3 && (message.to_id.channel_id == 0 && !MessageObjectTypeIdentifier.isUnread(message) && lower_id != 0 || message.id > 0)) {
                                 message.send_state = 0;
                             }
                             if (lower_id == 0 && !cursor.isNull(5)) {
@@ -3719,7 +3721,7 @@ public class MessagesStorage {
                                         message.replyMessage.readAttachPath(data, UserConfig.getInstance(currentAccount).clientUserId);
                                         data.reuse();
                                         if (message.replyMessage != null) {
-                                            if (MessageObject.isMegagroup(message)) {
+                                            if (MessageObjectTypeIdentifier.isMegagroup(message)) {
                                                 message.replyMessage.flags |= TLRPC.MESSAGE_FLAG_MEGAGROUP;
                                             }
                                             addUsersAndChatsFromMessage(message.replyMessage, usersToLoad, chatsToLoad);
@@ -3757,7 +3759,7 @@ public class MessagesStorage {
                             if (lower_id == 0 && !cursor.isNull(5)) {
                                 message.random_id = cursor.longValue(5);
                             }
-                            if (MessageObject.isSecretPhotoOrVideo(message)) {
+                            if (MessageObjectTypeIdentifier.isSecretPhotoOrVideo(message)) {
                                 try {
                                     SQLiteCursor cursor2 = database.queryFinalized(String.format(Locale.US, "SELECT date FROM enc_tasks_v2 WHERE mid = %d", message.id));
                                     if (cursor2.next()) {
@@ -3833,7 +3835,7 @@ public class MessagesStorage {
                                     for (int a = 0; a < arrayList.size(); a++) {
                                         TLRPC.Message object = arrayList.get(a);
                                         object.replyMessage = message;
-                                        if (MessageObject.isMegagroup(object)) {
+                                        if (MessageObjectTypeIdentifier.isMegagroup(object)) {
                                             object.replyMessage.flags |= TLRPC.MESSAGE_FLAG_MEGAGROUP;
                                         }
                                     }
@@ -3847,7 +3849,7 @@ public class MessagesStorage {
                                         TLRPC.Message object = arrayList.get(a);
                                         object.replyMessage = message;
                                         object.reply_to_msg_id = message.id;
-                                        if (MessageObject.isMegagroup(object)) {
+                                        if (MessageObjectTypeIdentifier.isMegagroup(object)) {
                                             object.replyMessage.flags |= TLRPC.MESSAGE_FLAG_MEGAGROUP;
                                         }
                                     }
@@ -4593,17 +4595,17 @@ public class MessagesStorage {
 
     private int getMessageMediaType(TLRPC.Message message) {
         if (message instanceof TLRPC.TL_message_secret) {
-            if ((message.media instanceof TLRPC.TL_messageMediaPhoto || MessageObject.isGifMessage(message)) && message.ttl > 0 && message.ttl <= 60 ||
-                            MessageObject.isVoiceMessage(message) ||
-                            MessageObject.isVideoMessage(message) ||
-                            MessageObject.isRoundVideoMessage(message)) {
+            if ((message.media instanceof TLRPC.TL_messageMediaPhoto || MessageObjectTypeIdentifier.isGifMessage(message)) && message.ttl > 0 && message.ttl <= 60 ||
+                            MessageObjectTypeIdentifier.isVoiceMessage(message) ||
+                            MessageObjectTypeIdentifier.isVideoMessage(message) ||
+                            MessageObjectTypeIdentifier.isRoundVideoMessage(message)) {
                 return 1;
-            } else if (message.media instanceof TLRPC.TL_messageMediaPhoto || MessageObject.isVideoMessage(message)) {
+            } else if (message.media instanceof TLRPC.TL_messageMediaPhoto || MessageObjectTypeIdentifier.isVideoMessage(message)) {
                 return 0;
             }
         } else if (message instanceof TLRPC.TL_message && (message.media instanceof TLRPC.TL_messageMediaPhoto || message.media instanceof TLRPC.TL_messageMediaDocument) && message.media.ttl_seconds != 0) {
             return 1;
-        } else if (message.media instanceof TLRPC.TL_messageMediaPhoto || MessageObject.isVideoMessage(message)) {
+        } else if (message.media instanceof TLRPC.TL_messageMediaPhoto || MessageObjectTypeIdentifier.isVideoMessage(message)) {
             return 0;
         }
         return -1;
@@ -4853,7 +4855,7 @@ public class MessagesStorage {
                     mentionsIdsMap.put(messageId, message.dialog_id);
                 }
 
-                if (!(message.action instanceof TLRPC.TL_messageActionHistoryClear) && !MessageObject.isOut(message) && (message.id > 0 || MessageObject.isUnread(message))) {Integer currentMaxId = dialogsReadMax.get(message.dialog_id);
+                if (!(message.action instanceof TLRPC.TL_messageActionHistoryClear) && !MessageObjectTypeIdentifier.isOut(message) && (message.id > 0 || MessageObjectTypeIdentifier.isUnread(message))) {Integer currentMaxId = dialogsReadMax.get(message.dialog_id);
                     if (currentMaxId == null) {
                         SQLiteCursor cursor = database.queryFinalized("SELECT inbox_max FROM dialogs WHERE did = " + message.dialog_id);
                         if (cursor.next()) {
@@ -4989,7 +4991,7 @@ public class MessagesStorage {
                 state.bindInteger(4, message.send_state);
                 state.bindInteger(5, message.date);
                 state.bindByteBuffer(6, data);
-                state.bindInteger(7, (MessageObject.isOut(message) ? 1 : 0));
+                state.bindInteger(7, (MessageObjectTypeIdentifier.isOut(message) ? 1 : 0));
                 state.bindInteger(8, message.ttl);
                 if ((message.flags & TLRPC.MESSAGE_FLAG_HAS_VIEWS) != 0) {
                     state.bindInteger(9, message.views);
@@ -5034,13 +5036,13 @@ public class MessagesStorage {
                         int type = 0;
                         long id = 0;
                         TLRPC.MessageMedia object = null;
-                        if (MessageObject.isVoiceMessage(message)) {
+                        if (MessageObjectTypeIdentifier.isVoiceMessage(message)) {
                             id = message.media.document.id;
                             type = DownloadController.AUTODOWNLOAD_MASK_AUDIO;
                             object = new TLRPC.TL_messageMediaDocument();
                             object.document = message.media.document;
                             object.flags |= 1;
-                        } else if (MessageObject.isRoundVideoMessage(message)) {
+                        } else if (MessageObjectTypeIdentifier.isRoundVideoMessage(message)) {
                             id = message.media.document.id;
                             type = DownloadController.AUTODOWNLOAD_MASK_VIDEOMESSAGE;
                             object = new TLRPC.TL_messageMediaDocument();
@@ -5055,13 +5057,13 @@ public class MessagesStorage {
                                 object.photo = message.media.photo;
                                 object.flags |= 1;
                             }
-                        } else if (MessageObject.isVideoMessage(message)) {
+                        } else if (MessageObjectTypeIdentifier.isVideoMessage(message)) {
                             id = message.media.document.id;
                             type = DownloadController.AUTODOWNLOAD_MASK_VIDEO;
                             object = new TLRPC.TL_messageMediaDocument();
                             object.document = message.media.document;
                             object.flags |= 1;
-                        } else if (message.media instanceof TLRPC.TL_messageMediaDocument && !MessageObject.isMusicMessage(message) && !MessageObject.isGifDocument(message.media.document)) {
+                        } else if (message.media instanceof TLRPC.TL_messageMediaDocument && !MessageObjectTypeIdentifier.isMusicMessage(message) && !MessageObjectTypeIdentifier.isGifDocument(message.media.document)) {
                             id = message.media.document.id;
                             type = DownloadController.AUTODOWNLOAD_MASK_DOCUMENT;
                             object = new TLRPC.TL_messageMediaDocument();
@@ -6401,7 +6403,7 @@ public class MessagesStorage {
                     state.bindInteger(4, message.send_state);
                     state.bindInteger(5, message.date);
                     state.bindByteBuffer(6, data);
-                    state.bindInteger(7, (MessageObject.isOut(message) ? 1 : 0));
+                    state.bindInteger(7, (MessageObjectTypeIdentifier.isOut(message) ? 1 : 0));
                     state.bindInteger(8, message.ttl);
                     if ((message.flags & TLRPC.MESSAGE_FLAG_HAS_VIEWS) != 0) {
                         state.bindInteger(9, message.views);
@@ -6619,7 +6621,7 @@ public class MessagesStorage {
                                             message.replyMessage.readAttachPath(data, UserConfig.getInstance(currentAccount).clientUserId);
                                             data.reuse();
                                             if (message.replyMessage != null) {
-                                                if (MessageObject.isMegagroup(message)) {
+                                                if (MessageObjectTypeIdentifier.isMegagroup(message)) {
                                                     message.replyMessage.flags |= TLRPC.MESSAGE_FLAG_MEGAGROUP;
                                                 }
                                                 addUsersAndChatsFromMessage(message.replyMessage, usersToLoad, chatsToLoad);
@@ -6687,7 +6689,7 @@ public class MessagesStorage {
                             if (owner != null) {
                                 owner.replyMessage = message;
                                 message.dialog_id = owner.dialog_id;
-                                if (MessageObject.isMegagroup(owner)) {
+                                if (MessageObjectTypeIdentifier.isMegagroup(owner)) {
                                     owner.replyMessage.flags |= TLRPC.MESSAGE_FLAG_MEGAGROUP;
                                 }
                             }
@@ -6804,7 +6806,7 @@ public class MessagesStorage {
                         state.bindInteger(4, message.send_state);
                         state.bindInteger(5, message.date);
                         state.bindByteBuffer(6, data);
-                        state.bindInteger(7, (MessageObject.isOut(message) ? 1 : 0));
+                        state.bindInteger(7, (MessageObjectTypeIdentifier.isOut(message) ? 1 : 0));
                         state.bindInteger(8, 0);
                         state.bindInteger(9, (message.flags & TLRPC.MESSAGE_FLAG_HAS_VIEWS) != 0 ? message.views : 0);
                         state.bindInteger(10, 0);

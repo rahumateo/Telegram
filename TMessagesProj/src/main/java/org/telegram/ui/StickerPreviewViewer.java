@@ -38,9 +38,10 @@ import org.telegram.messenger.Emoji;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.message.MessageObject;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
+import org.telegram.messenger.message.MessageObjectTypeIdentifier;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.Cells.ContextLinkCell;
@@ -114,7 +115,7 @@ public class StickerPreviewViewer {
                 icons.add(R.drawable.stickers_pack);
                 actions.add(1);
             }
-            if (!MessageObject.isMaskDocument(currentSticker) && (inFavs || DataQuery.getInstance(currentAccount).canAddStickerToFavorites())) {
+            if (!MessageObjectTypeIdentifier.isMaskDocument(currentSticker) && (inFavs || DataQuery.getInstance(currentAccount).canAddStickerToFavorites())) {
                 items.add(inFavs ? LocaleController.getString("DeleteFromFavorites", R.string.DeleteFromFavorites) : LocaleController.getString("AddToFavorites", R.string.AddToFavorites));
                 icons.add(inFavs ? R.drawable.stickers_unfavorite : R.drawable.stickers_favorite);
                 actions.add(2);
